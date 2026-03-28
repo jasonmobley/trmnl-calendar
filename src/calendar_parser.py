@@ -224,9 +224,9 @@ def fetch_and_parse_calendars(
             event = dict(event_by_key[key])
             cal_names = cal_names_by_key[key]
             if len(cal_names) == total_calendars and total_calendars > 2:
-                prefix = "All"
+                prefix = "ALL"
             else:
-                prefix = " / ".join(cal_names)
+                prefix = " / ".join(n.upper() for n in cal_names)
             event["title"] = f"{prefix}: {event['title']}"
             result.append(event)
 
