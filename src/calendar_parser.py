@@ -170,16 +170,24 @@ def fetch_and_parse_calendars(
 
     Returns:
         {
-            "today": [{"time": ..., "title": ...}, ...],
-            "tomorrow": [{"time": ..., "title": ...}, ...],
+            "today_allday": [...], "today_timed": [...],
+            "tomorrow_allday": [...], "tomorrow_timed": [...],
         }
+
+    Events across calendars are deduplicated: if the same title, start time,
+    and end time appear in multiple calendars the event is emitted once with a
+    combined prefix (e.g. "Alice / Bob: event").  When the event appears in
+    ALL configured calendars and there are more than 2, the prefix is "All".
 
     Events are sorted by start time (all-day events first).
     Failed URL fetches are skipped; partial data from successful URLs is returned.
     """
+    total_calendars = len(ics_urls)
     tomorrow = today + timedelta(days=1)
-    today_events: list[dict] = []
-    tomorrow_events: list[dict] = []
+
+    # Collect (cal_name, event) pairs without prefixing titles yet
+    today_raw: list[tuple[str, dict]] = []
+    tomorrow_raw: list[tuple[str, dict]] = []
 
     for url in ics_urls:
         cal = fetch_ics(url)
@@ -188,11 +196,44 @@ def fetch_and_parse_calendars(
 
         cal_name = _calendar_name(url)
         for event in get_events_for_date(cal, today, tz):
-            event["title"] = f"{cal_name}: {event['title']}"
-            today_events.append(event)
+            today_raw.append((cal_name, event))
         for event in get_events_for_date(cal, tomorrow, tz):
-            event["title"] = f"{cal_name}: {event['title']}"
-            tomorrow_events.append(event)
+            tomorrow_raw.append((cal_name, event))
+
+    def _dedup_and_prefix(raw: list[tuple[str, dict]]) -> list[dict]:
+        """
+        Merge events with identical (title, time, end_time) across calendars,
+        combining their calendar names into a single prefix.
+        """
+        # Use an ordered structure to preserve first-seen sort order
+        seen_keys: list[tuple] = []
+        cal_names_by_key: dict[tuple, list[str]] = {}
+        event_by_key: dict[tuple, dict] = {}
+
+        for cal_name, event in raw:
+            key = (event["title"], event["time"], event.get("end_time"))
+            if key not in event_by_key:
+                seen_keys.append(key)
+                cal_names_by_key[key] = []
+                event_by_key[key] = event
+            if cal_name not in cal_names_by_key[key]:
+                cal_names_by_key[key].append(cal_name)
+
+        result = []
+        for key in seen_keys:
+            event = dict(event_by_key[key])
+            cal_names = cal_names_by_key[key]
+            if len(cal_names) == total_calendars and total_calendars > 2:
+                prefix = "All"
+            else:
+                prefix = " / ".join(cal_names)
+            event["title"] = f"{prefix}: {event['title']}"
+            result.append(event)
+
+        return result
+
+    today_events = _dedup_and_prefix(today_raw)
+    tomorrow_events = _dedup_and_prefix(tomorrow_raw)
 
     # Sort by _sort_key, then strip the internal sort key before returning
     today_events.sort(key=lambda e: e["_sort_key"])
