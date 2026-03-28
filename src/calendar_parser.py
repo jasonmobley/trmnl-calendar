@@ -146,6 +146,20 @@ def get_events_for_date(
     return events
 
 
+def _calendar_name(url: str) -> str:
+    """
+    Derive a display name from an ICS URL.
+
+    Takes the last path segment, strips the .ics extension, and returns the
+    result.  E.g. '.../work_calendar.ics' → 'work_calendar'.
+    Falls back to the full URL if the segment can't be parsed.
+    """
+    segment = url.rstrip("/").rsplit("/", 1)[-1]
+    if segment.lower().endswith(".ics"):
+        segment = segment[:-4]
+    return segment or url
+
+
 def fetch_and_parse_calendars(
     ics_urls: list[str],
     today: date,
@@ -172,8 +186,13 @@ def fetch_and_parse_calendars(
         if cal is None:
             continue
 
-        today_events.extend(get_events_for_date(cal, today, tz))
-        tomorrow_events.extend(get_events_for_date(cal, tomorrow, tz))
+        cal_name = _calendar_name(url)
+        for event in get_events_for_date(cal, today, tz):
+            event["title"] = f"{cal_name}: {event['title']}"
+            today_events.append(event)
+        for event in get_events_for_date(cal, tomorrow, tz):
+            event["title"] = f"{cal_name}: {event['title']}"
+            tomorrow_events.append(event)
 
     # Sort by _sort_key, then strip the internal sort key before returning
     today_events.sort(key=lambda e: e["_sort_key"])
