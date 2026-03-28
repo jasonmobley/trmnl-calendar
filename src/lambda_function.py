@@ -96,7 +96,14 @@ def handler(event: dict, context) -> dict:
         tomorrow_events=events["tomorrow"],
     )
 
-    # --- POST to TRMNL webhook ---
+    # --- POST to TRMNL webhook (or dry-run: just print the payload) ---
+    if os.environ.get("DRY_RUN", "").strip().lower() in ("1", "true", "yes"):
+        import json as _json
+        payload_json = _json.dumps(payload, indent=2)
+        print(payload_json)
+        print(f"--- Payload size: {len(_json.dumps(payload).encode())} bytes ---")
+        return {"statusCode": 200, "body": "DRY_RUN — payload printed, no POST sent"}
+
     success = post_to_trmnl(webhook_url, payload)
 
     if success:

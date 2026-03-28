@@ -1,4 +1,4 @@
-.PHONY: install local validate build deploy deploy-ci delete clean
+.PHONY: install local dry-run validate build deploy deploy-ci delete clean
 
 # ── Local development ────────────────────────────────────────────────────────
 
@@ -9,6 +9,10 @@ install:
 ## Run the Lambda handler locally (loads .env automatically)
 local:
 	uv run python main.py
+
+## Fetch real calendar data and print the POST body — no webhook call made
+dry-run:
+	DRY_RUN=1 uv run python main.py
 
 # ── AWS SAM ──────────────────────────────────────────────────────────────────
 
