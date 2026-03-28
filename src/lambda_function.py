@@ -10,7 +10,7 @@ Triggered by an EventBridge schedule (every 15 minutes).
 
 import logging
 import os
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from calendar_parser import fetch_and_parse_calendars
@@ -31,6 +31,7 @@ def handler(event: dict, context) -> dict:
         ICS_URLS          Comma-separated ICS calendar URLs (required)
         TRMNL_WEBHOOK_URL Full TRMNL webhook URL including plugin UUID (required)
         TIMEZONE          IANA timezone name (optional, default: America/New_York)
+        REFERENCE_DATE    Override "today" for testing, YYYY-MM-DD (optional, default: actual today)
     """
     # --- Load and validate configuration ---
     ics_urls_raw = os.environ.get("ICS_URLS", "").strip()
@@ -58,8 +59,19 @@ def handler(event: dict, context) -> dict:
         tz = ZoneInfo("America/New_York")
 
     # --- Determine today and tomorrow in the target timezone ---
-    now = datetime.now(tz)
-    today = now.date()
+    reference_date_raw = os.environ.get("REFERENCE_DATE", "").strip()
+    if reference_date_raw:
+        try:
+            today = date.fromisoformat(reference_date_raw)
+            logger.info("Using REFERENCE_DATE override: %s", today)
+        except ValueError:
+            logger.warning(
+                "Invalid REFERENCE_DATE '%s' (expected YYYY-MM-DD) — using actual today",
+                reference_date_raw,
+            )
+            today = datetime.now(tz).date()
+    else:
+        today = datetime.now(tz).date()
     tomorrow = today + timedelta(days=1)
 
     # Cross-platform date labels ("Friday, Mar 27" — avoids %-d on macOS)
