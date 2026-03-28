@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  trmnl-calendar — Fetches ICS calendar data and posts today's and tomorrow's
+  events to a TRMNL private plugin webhook on a 15-minute schedule.
+
+Parameters:
+  IcsUrls:
+    Type: String
+    Description: >
+      Comma-separated list of ICS calendar URLs to fetch.
+      Example: https://calendar.google.com/calendar/ical/you%40gmail.com/private-abc/basic.ics
+  TrmnlWebhookUrl:
+    Type: String
+    Description: >
+      Full TRMNL private plugin webhook URL (includes the plugin UUID, which
+      acts as the auth token). Found in your TRMNL plugin instance settings.
+      Example: https://trmnl.com/api/custom_plugins/your-plugin-uuid-here
+    NoEcho: true
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 128
+    # Structured logging format for CloudWatch Logs Insights queries
+    LoggingConfig:
+      LogFormat: Text
+
+Resources:
+  TrmnlCalendarFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: trmnl-calendar
+      Description: Fetches ICS calendars and posts events to TRMNL every 15 minutes
+      CodeUri: src/
+      Handler: lambda_function.handler
+      Environment:
+        Variables:
+          ICS_URLS: !Ref IcsUrls
+          TRMNL_WEBHOOK_URL: !Ref TrmnlWebhookUrl
+          TIMEZONE: America/New_York
+      Events:
+        ScheduleEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
+            Name: TrmnlCalendarSchedule
+            Description: Trigger TRMNL calendar update every 15 minutes
+            Enabled: true
+      # Minimal IAM: only CloudWatch Logs write access needed
+      Policies:
+        - AWSLambdaBasicExecutionRole
+
+Outputs:
+  FunctionArn:
+    Description: Lambda function ARN
+    Value: !GetAtt TrmnlCalendarFunction.Arn
+  FunctionName:
+    Description: Lambda function name
+    Value: !Ref TrmnlCalendarFunction
+  LogGroupName:
+    Description: CloudWatch log group for this function
+    Value: !Sub /aws/lambda/${TrmnlCalendarFunction}

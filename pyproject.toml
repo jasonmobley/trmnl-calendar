@@ -1,0 +1,11 @@
+[project]
+name = "trmnl-calendar"
+version = "0.1.0"
+description = "Generate ICS calendar content for trmnl devices"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "icalendar==7.0.3",
+    "recurring-ical-events==3.8.1",
+    "requests==2.33.0",
+]
