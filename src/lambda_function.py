@@ -92,8 +92,10 @@ def handler(event: dict, context) -> dict:
     payload = build_payload(
         today_label=today_label,
         tomorrow_label=tomorrow_label,
-        today_events=events["today"],
-        tomorrow_events=events["tomorrow"],
+        today_allday=events["today_allday"],
+        today_timed=events["today_timed"],
+        tomorrow_allday=events["tomorrow_allday"],
+        tomorrow_timed=events["tomorrow_timed"],
     )
 
     # --- POST to TRMNL webhook (or dry-run: just print the payload) ---

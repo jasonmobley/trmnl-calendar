@@ -201,10 +201,23 @@ def fetch_and_parse_calendars(
     for event in today_events + tomorrow_events:
         event.pop("_sort_key")
 
+    def _split(events: list[dict]) -> tuple[list[dict], list[dict]]:
+        allday = [e for e in events if e["time"] == "All day"]
+        timed = [e for e in events if e["time"] != "All day"]
+        return allday, timed
+
+    today_allday, today_timed = _split(today_events)
+    tomorrow_allday, tomorrow_timed = _split(tomorrow_events)
+
     logger.info(
-        "Found %d event(s) today, %d event(s) tomorrow",
-        len(today_events),
-        len(tomorrow_events),
+        "Found %d all-day + %d timed event(s) today, %d all-day + %d timed event(s) tomorrow",
+        len(today_allday), len(today_timed),
+        len(tomorrow_allday), len(tomorrow_timed),
     )
 
-    return {"today": today_events, "tomorrow": tomorrow_events}
+    return {
+        "today_allday": today_allday,
+        "today_timed": today_timed,
+        "tomorrow_allday": tomorrow_allday,
+        "tomorrow_timed": tomorrow_timed,
+    }
