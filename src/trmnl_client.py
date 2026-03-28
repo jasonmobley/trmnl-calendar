@@ -16,64 +16,63 @@ logger = logging.getLogger(__name__)
 def build_payload(
     today_label: str,
     tomorrow_label: str,
-    today_events: list[dict],
-    tomorrow_events: list[dict],
+    today_allday: list[dict],
+    today_timed: list[dict],
+    tomorrow_allday: list[dict],
+    tomorrow_timed: list[dict],
     max_size_bytes: int = 2000,
     max_events_per_day: int = 8,
 ) -> dict:
     """
     Assemble the TRMNL webhook payload and enforce the size budget.
 
-    Algorithm:
-    1. Cap each event list at max_events_per_day upfront.
-    2. Build the full payload dict.
-    3. If the serialized JSON exceeds max_size_bytes, trim one event at a time
-       from whichever day currently has more events (alternating when equal),
-       until the payload fits or both lists are empty.
+    All-day and timed events are kept in separate fields so the template can
+    render them differently.
+
+    If the payload exceeds max_size_bytes, tomorrow's events are dropped
+    entirely so today's events are always shown in full.
 
     Returns the full {"merge_variables": {...}} wrapper dict.
     """
-    # Defensive copies so we don't mutate the caller's lists
-    today_events = list(today_events[:max_events_per_day])
-    tomorrow_events = list(tomorrow_events[:max_events_per_day])
+    # Defensive copies, capped upfront
+    today_allday = list(today_allday[:max_events_per_day])
+    today_timed = list(today_timed[:max_events_per_day])
+    tomorrow_allday = list(tomorrow_allday[:max_events_per_day])
+    tomorrow_timed = list(tomorrow_timed[:max_events_per_day])
 
-    def _build(t_events: list[dict], tm_events: list[dict]) -> dict:
+    def _build(t_allday, t_timed, tm_allday, tm_timed) -> dict:
         return {
             "merge_variables": {
                 "today_label": today_label,
-                "today_count": len(t_events),
-                "today_events": t_events,
+                "today_allday_count": len(t_allday),
+                "today_allday_events": t_allday,
+                "today_timed_count": len(t_timed),
+                "today_timed_events": t_timed,
                 "tomorrow_label": tomorrow_label,
-                "tomorrow_count": len(tm_events),
-                "tomorrow_events": tm_events,
+                "tomorrow_allday_count": len(tm_allday),
+                "tomorrow_allday_events": tm_allday,
+                "tomorrow_timed_count": len(tm_timed),
+                "tomorrow_timed_events": tm_timed,
             }
         }
 
-    payload = _build(today_events, tomorrow_events)
+    payload = _build(today_allday, today_timed, tomorrow_allday, tomorrow_timed)
     payload_bytes = len(json.dumps(payload).encode("utf-8"))
 
     if payload_bytes > max_size_bytes:
         logger.warning(
-            "Payload is %d bytes (limit %d); trimming events", payload_bytes, max_size_bytes
+            "Payload is %d bytes (limit %d); dropping tomorrow events", payload_bytes, max_size_bytes
         )
-
-    while payload_bytes > max_size_bytes and (today_events or tomorrow_events):
-        # Trim from the longer list; if equal, trim today first
-        if len(today_events) >= len(tomorrow_events) and today_events:
-            today_events.pop()
-        elif tomorrow_events:
-            tomorrow_events.pop()
-        else:
-            today_events.pop()
-
-        payload = _build(today_events, tomorrow_events)
+        tomorrow_allday = []
+        tomorrow_timed = []
+        payload = _build(today_allday, today_timed, tomorrow_allday, tomorrow_timed)
         payload_bytes = len(json.dumps(payload).encode("utf-8"))
 
     logger.info(
-        "Payload: %d bytes, %d today events, %d tomorrow events",
+        "Payload: %d bytes — today %d all-day + %d timed, tomorrow %d all-day + %d timed",
         payload_bytes,
-        len(today_events),
-        len(tomorrow_events),
+        len(today_allday), len(today_timed),
+        len(tomorrow_allday), len(tomorrow_timed),
     )
 
     return payload
