@@ -176,8 +176,7 @@ def fetch_and_parse_calendars(
 
     Events across calendars are deduplicated: if the same title, start time,
     and end time appear in multiple calendars the event is emitted once with a
-    combined prefix (e.g. "Alice / Bob: event").  When the event appears in
-    ALL configured calendars and there are more than 2, the prefix is "All".
+    "calendars" field listing each calendar name the event appears on.
 
     Events are sorted by start time (all-day events first).
     Failed URL fetches are skipped; partial data from successful URLs is returned.
@@ -203,7 +202,7 @@ def fetch_and_parse_calendars(
     def _dedup_and_prefix(raw: list[tuple[str, dict]]) -> list[dict]:
         """
         Merge events with identical (title, time, end_time) across calendars,
-        combining their calendar names into a single prefix.
+        collecting their calendar names into a "calendars" field.
         """
         # Use an ordered structure to preserve first-seen sort order
         seen_keys: list[tuple] = []
@@ -222,12 +221,7 @@ def fetch_and_parse_calendars(
         result = []
         for key in seen_keys:
             event = dict(event_by_key[key])
-            cal_names = cal_names_by_key[key]
-            if len(cal_names) == total_calendars and total_calendars > 2:
-                prefix = "ALL"
-            else:
-                prefix = " / ".join(n.upper() for n in cal_names)
-            event["title"] = f"{prefix}: {event['title']}"
+            event["calendars"] = cal_names_by_key[key]
             result.append(event)
 
         return result
