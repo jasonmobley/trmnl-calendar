@@ -29,7 +29,7 @@ deploy:
 	sam deploy --guided
 
 ## Non-interactive deploy (uses existing samconfig.toml from a previous guided deploy)
-deploy-ci:
+deploy-ci: build
 	sam deploy
 
 ## Delete the CloudFormation stack and all associated AWS resources
