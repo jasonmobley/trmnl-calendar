@@ -40,7 +40,6 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: rate(15 minutes)
-            Name: TrmnlCalendarSchedule
             Description: Trigger TRMNL calendar update every 15 minutes
             Enabled: true
       # Minimal IAM: only CloudWatch Logs write access needed
