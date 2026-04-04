@@ -5,11 +5,6 @@ Description: >
   events to a TRMNL private plugin webhook on a 15-minute schedule.
 
 Parameters:
-  IcsUrls:
-    Type: String
-    Description: >
-      Comma-separated list of ICS calendar URLs to fetch.
-      Example: https://calendar.google.com/calendar/ical/you%40gmail.com/private-abc/basic.ics
   TrmnlWebhookUrl:
     Type: String
     Description: >
@@ -37,7 +32,7 @@ Resources:
       Handler: lambda_function.handler
       Environment:
         Variables:
-          ICS_URLS: !Ref IcsUrls
+          ICS_URLS: '{{resolve:ssm:/trmnl-calendar/ics-urls}}'
           TRMNL_WEBHOOK_URL: !Ref TrmnlWebhookUrl
           TIMEZONE: America/New_York
       Events:
