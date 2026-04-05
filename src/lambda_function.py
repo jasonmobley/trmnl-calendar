@@ -16,10 +16,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from calendar_parser import fetch_and_parse_calendars
 from trmnl_client import build_payload, post_to_trmnl
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s — %(message)s",
-)
+logging.getLogger().setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
 
 
