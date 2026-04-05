@@ -25,7 +25,7 @@ Resources:
       Environment:
         Variables:
           ICS_URLS: '{{resolve:ssm:/trmnl-calendar/ics-urls}}'
-          TRMNL_WEBHOOK_URL: '{{resolve:ssm-secure:/trmnl-calendar/webhook-url}}'
+          TRMNL_WEBHOOK_URL: '{{resolve:ssm:/trmnl-calendar/webhook-url}}'
           TIMEZONE: America/New_York
       Events:
         ScheduleEvent:
