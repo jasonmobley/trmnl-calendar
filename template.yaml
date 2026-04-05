@@ -4,14 +4,6 @@ Description: >
   trmnl-calendar — Fetches ICS calendar data and posts today's and tomorrow's
   events to a TRMNL private plugin webhook on a 15-minute schedule.
 
-Parameters:
-  TrmnlWebhookUrl:
-    Type: String
-    Description: >
-      Full TRMNL private plugin webhook URL (includes the plugin UUID, which
-      acts as the auth token). Found in your TRMNL plugin instance settings.
-      Example: https://trmnl.com/api/custom_plugins/your-plugin-uuid-here
-    NoEcho: true
 
 Globals:
   Function:
@@ -33,7 +25,7 @@ Resources:
       Environment:
         Variables:
           ICS_URLS: '{{resolve:ssm:/trmnl-calendar/ics-urls}}'
-          TRMNL_WEBHOOK_URL: !Ref TrmnlWebhookUrl
+          TRMNL_WEBHOOK_URL: '{{resolve:ssm-secure:/trmnl-calendar/webhook-url}}'
           TIMEZONE: America/New_York
       Events:
         ScheduleEvent:
