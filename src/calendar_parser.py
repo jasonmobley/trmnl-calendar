@@ -184,6 +184,16 @@ def fetch_and_parse_calendars(
     total_calendars = len(ics_urls)
     tomorrow = today + timedelta(days=1)
 
+    today_start = datetime(today.year, today.month, today.day, 0, 0, 0, tzinfo=tz)
+    today_end = datetime(today.year, today.month, today.day, 23, 59, 59, tzinfo=tz)
+    tomorrow_start = datetime(tomorrow.year, tomorrow.month, tomorrow.day, 0, 0, 0, tzinfo=tz)
+    tomorrow_end = datetime(tomorrow.year, tomorrow.month, tomorrow.day, 23, 59, 59, tzinfo=tz)
+    logger.info(
+        "Matching today %s – %s, tomorrow %s – %s",
+        today_start.isoformat(), today_end.isoformat(),
+        tomorrow_start.isoformat(), tomorrow_end.isoformat(),
+    )
+
     # Collect (cal_name, event) pairs without prefixing titles yet
     today_raw: list[tuple[str, dict]] = []
     tomorrow_raw: list[tuple[str, dict]] = []
