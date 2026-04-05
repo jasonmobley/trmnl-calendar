@@ -54,8 +54,7 @@ def handler(event: dict, context) -> dict:
     except ZoneInfoNotFoundError:
         logger.error("Unknown timezone: %s — falling back to America/New_York", tz_name)
         tz = ZoneInfo("America/New_York")
-        tz_name = "America/New_York"
-    logger.info("Effective timezone: %s", tz_name)
+    logger.info("Effective timezone: %s", tz.key)
 
     # --- Determine today and tomorrow in the target timezone ---
     reference_date_raw = os.environ.get("REFERENCE_DATE", "").strip()
