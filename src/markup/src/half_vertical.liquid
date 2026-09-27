@@ -1,0 +1,123 @@
+{% comment %}
+  Split a fixed vertical budget between today and tomorrow, favoring today.
+  Heights are approximate per-item px (incl. gap) in the half_vertical layout.
+{% endcomment %}
+{% assign list_budget = 355 %}
+{% assign allday_h = 30 %}
+{% assign timed_h = 40 %}
+{% assign tomorrow_reserve_max = 80 %}
+
+{% assign today_count = today_allday_count | plus: today_timed_count %}
+{% assign tomorrow_count = tomorrow_allday_count | plus: tomorrow_timed_count %}
+
+{% assign today_allday_h = today_allday_count | times: allday_h %}
+{% assign today_timed_h = today_timed_count | times: timed_h %}
+{% assign today_needed = today_allday_h | plus: today_timed_h %}
+{% if today_count == 0 %}{% assign today_needed = 90 %}{% endif %}
+
+{% assign tomorrow_allday_h = tomorrow_allday_count | times: allday_h %}
+{% assign tomorrow_timed_h = tomorrow_timed_count | times: timed_h %}
+{% assign tomorrow_needed = tomorrow_allday_h | plus: tomorrow_timed_h %}
+
+{% comment %} Keep a little room for tomorrow, but never more than it needs {% endcomment %}
+{% assign tomorrow_reserve = tomorrow_needed %}
+{% if tomorrow_reserve > tomorrow_reserve_max %}{% assign tomorrow_reserve = tomorrow_reserve_max %}{% endif %}
+
+{% assign today_max = list_budget | minus: tomorrow_reserve %}
+{% if today_needed < today_max %}{% assign today_max = today_needed %}{% endif %}
+
+{% assign tomorrow_max = list_budget | minus: today_max %}
+{% assign show_tomorrow = false %}
+{% if tomorrow_count > 0 and tomorrow_max >= allday_h %}{% assign show_tomorrow = true %}{% endif %}
+
+<div class="layout layout--top layout--stretch flex flex--col">
+  <div class="today flex flex--col" style="flex: 0 0 auto;">
+    <div class="flex flex--row flex--between stretch-x border--h-5">
+      <span class="label">Today</span>
+      <span class="label label--small">
+        {{ today_label }}
+      </span>
+    </div>
+    {% if today_count == 0 %}
+      <div class="today flex flex--col flex--around">
+        <div class="richtext richtext--center">
+          <span class="content content--xlarge text--center">What will we do?</span>
+          <span class="content content--small text--center">Nothing on the calendar today</span>
+        </div>
+      </div>
+    {% else %}
+      <div class="list" data-list-limit="true" data-list-max-height="{{ today_max }}" data-list-hidden-count="true" data-list-max-columns="1">
+        {% for event in today_allday_events %}
+          <div class="item">
+            <span class="label label--primary">
+              {{ event.title }}
+            </span>
+          </div>
+        {% endfor %}
+        {% for event in today_timed_events %}
+          <div class="item">
+            <div class="meta"></div>
+            <div class="content">
+              <span class="title title--small">
+                {{ event.title }}
+              </span>
+              <div class="flex gap--small">
+                <span class="label label--small label--underline">
+                  {{ event.time }} - {{ event.end_time }}
+                </span>
+                {% for calendar in event.calendars %}
+                  <span class="label label--underline label--small">
+                    {{ calendar }}
+                  </span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+  {% if show_tomorrow %}
+    <div class="tomorrow flex flex--col flex--end" style="flex: 0 0 auto; margin-top: auto;">
+      <div class="flex flex--row flex--between stretch-x border--h-5">
+        <span class="label">Tomorrow</span>
+        <span class="label label--small">
+          {{ tomorrow_label }}
+        </span>
+      </div>
+      <div class="list" data-list-limit="true" data-list-max-height="{{ tomorrow_max }}" data-list-hidden-count="true" data-list-max-columns="1">
+        {% for event in tomorrow_allday_events %}
+          <div class="item">
+            <span class="label label--primary">
+              {{ event.title }}
+            </span>
+          </div>
+        {% endfor %}
+        {% for event in tomorrow_timed_events %}
+          <div class="item">
+            <div class="meta"></div>
+            <div class="content">
+              <span class="title title--small">
+                {{ event.title }}
+              </span>
+              <div class="flex gap--small">
+                <span class="label label--small label--underline">
+                  {{ event.time }} - {{ event.end_time }}
+                </span>
+                {% for calendar in event.calendars %}
+                  <span class="label label--underline label--small">
+                    {{ calendar }}
+                  </span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+<div class="title_bar">
+  <span class="title">{{ trmnl.plugin_settings.instance_name }}</span>
+  <span class="instance">{{ today_label }}</span>
+</div>

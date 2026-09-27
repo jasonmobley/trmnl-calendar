@@ -1,0 +1,76 @@
+<div class="layout layout--top layout--stretch">
+  <div class="columns">
+    <div class="column">
+      <div class="tomorrow flex flex--col">
+        <div class="flex flex--row flex--between stretch-x border--h-5">
+          <span class="label">Today</span>
+          <span class="label">{{ today_label }}</span>
+        </div>
+      <div class="list" data-list-limit="true" data-list-max-height="340" data-list-hidden-count="true" data-list-max-columns="1">
+        {% for event in today_allday_events %}
+        <div class="item">
+          <div class="content">
+            <span class="title title--small">{{ event.title }}</span>
+            <!--<span class="description"></span>-->
+          </div>
+        </div>
+        {% endfor %}
+        {%for event in today_timed_events %}
+        <div class="item">
+          <div class="meta">
+          </div>
+          <div class="content">
+            <span class="title title--small">{{ event.title }}</span>
+            <div class="flex gap--small">
+              <span class="label label--small label--underline">{{event.time}} - {{event.end_time}}</span>
+              {% for calendar in event.calendars %}
+              <span class="label label--underline label--small">{{ calendar }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    </div>
+
+    <div class="column">
+      <div class="tomorrow flex flex--col">
+        <div class="flex flex--row flex--between stretch-x border--h-5">
+          <span class="label">Tomorrow</span>
+          <span class="label">{{ tomorrow_label }}</span>
+        </div>
+        <div class="list" data-list-limit="true" data-list-max-height="200" data-list-hidden-count="true" data-list-max-columns="1">
+          {% for event in tomorrow_allday_events %}
+          <div class="item">
+            <div class="content">
+              <span class="title title--small">{{ event.title }}</span>
+              <!--<span class="description"></span>-->
+            </div>
+          </div>
+          {% endfor %}
+          {%for event in tomorrow_timed_events %}
+          <div class="item">
+            <div class="meta">
+            </div>
+            <div class="content">
+              <span class="title title--small">{{ event.title }}</span>
+              <div class="flex gap--small">
+                <span class="label label--small label--underline">{{event.time}} - {{event.end_time}}</span>
+                {% for calendar in event.calendars %}
+                <span class="label label--underline label--small">{{ calendar }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="title_bar">
+  <span class="title">{{ trmnl.plugin_settings.instance_name }}</span>
+  <span class="instance">{{ today_label }}</span>
+</div>
