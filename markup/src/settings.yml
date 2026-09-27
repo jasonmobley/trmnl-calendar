@@ -6,7 +6,7 @@ static_data: ''
 polling_verb: get
 framework_version: 3.1.1
 serverless_language: node
-refresh_interval_floor:
+refresh_interval_floor: ''
 polling_url: ''
 polling_headers: ''
 polling_body: ''
@@ -32,5 +32,5 @@ oauth_expiry_field_name: ''
 oauth_expiry_strategy: ''
 oauth_fixed_expiry_ms: ''
 name: Mobley Calendar
-description:
+description: ''
 refresh_interval: 15
