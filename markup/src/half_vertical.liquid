@@ -47,7 +47,7 @@
         </div>
       </div>
     {% else %}
-      <div class="list" data-list-limit="true" data-list-max-height="{{ today_max }}" data-list-hidden-count="true" data-list-max-columns="1">
+      <div class="list" data-overflow="true" data-overflow-max-height="{{ today_max }}" data-overflow-counter="true">
         {% for event in today_allday_events %}
           <div class="item">
             <span class="label label--primary">
@@ -86,7 +86,7 @@
           {{ tomorrow_label }}
         </span>
       </div>
-      <div class="list" data-list-limit="true" data-list-max-height="{{ tomorrow_max }}" data-list-hidden-count="true" data-list-max-columns="1">
+      <div class="list" data-overflow="true" data-overflow-max-height="{{ tomorrow_max }}" data-overflow-counter="true">
         {% for event in tomorrow_allday_events %}
           <div class="item">
             <span class="label label--primary">
