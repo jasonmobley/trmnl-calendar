@@ -1,33 +1,49 @@
-<div class="layout layout--col layout--stretch">
-  <div class="list" data-list-limit="true" data-list-hidden-count="true" data-list-max-columns="1">
-    {% for allday in today_allday_events %}
-    <div class="item">
-      <div class="meta">
-        <span class="index">1</span>
-      </div>
-      <div class="content">
-        <span class="title title--small text--gray-20">{{allday.title}}</span>
-      </div>
-    </div>
-    {% endfor %}
-    {%for timed in today_timed_events %}
-    <div class="item">
-      <div class="meta">
-        <span class="index">1</span>
-      </div>
-      <div class="content">
-        <span class="title title--small">{{timed.title}}</span>
-        <div class="flex gap--xsmall">
-          <span class="label label--small label--underline">10:00 - 11:00</span>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-</div>
+{% comment %}
+  Today only: the quadrant is too small to share with tomorrow.
+  The date is in the title bar, so there is no Today header here.
+  This markup should be sync'd to trmnl-calendar github repo.
+{% endcomment %}
+{% assign today_count = today_allday_count | plus: today_timed_count %}
 
+<div class="layout layout--col layout--top layout--stretch-x">
+  {% if today_count == 0 %}
+    <div class="richtext richtext--center">
+      <span class="content content--large text--center">What will we do?</span>
+      <span class="content content--small text--center">Nothing on the calendar today</span>
+    </div>
+  {% else %}
+    <div class="list" data-overflow="true" data-overflow-max-height="auto" data-overflow-counter="true">
+      {% for event in today_allday_events %}
+        <div class="item">
+          <span class="label label--primary">
+            {{ event.title }}
+          </span>
+        </div>
+      {% endfor %}
+      {% for event in today_timed_events %}
+        <div class="item">
+          <div class="meta"></div>
+          <div class="content">
+            <span class="title title--small">
+              {{ event.title }}
+            </span>
+            <div class="flex gap--small">
+              <span class="label label--small label--underline">
+                {{ event.time }} - {{ event.end_time }}
+              </span>
+              {% for calendar in event.calendars %}
+                <span class="label label--underline label--small">
+                  {{ calendar }}
+                </span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
 <div class="title_bar">
-  <img class="image" src="https://trmnl.com/images/plugins/trmnl--render.svg">
   <span class="title">{{ trmnl.plugin_settings.instance_name }}</span>
-  <span class="instance">{{today_label}}</span>
+  <span class="instance">{{ today_label }}</span>
 </div>
