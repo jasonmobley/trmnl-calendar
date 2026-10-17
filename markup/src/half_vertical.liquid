@@ -31,8 +31,8 @@
 {% assign show_tomorrow = false %}
 {% if tomorrow_count > 0 and tomorrow_max >= allday_h %}{% assign show_tomorrow = true %}{% endif %}
 
-<div class="layout layout--top layout--stretch flex flex--col" style="justify-content: flex-start;">
-  <div class="today flex flex--col" style="flex: 0 0 auto;">
+<div class="layout layout--col layout--top layout--stretch-x">
+  <div class="today flex flex--col grow shrink-0">
     <div class="flex flex--row flex--between stretch-x border--h-5">
       <span class="label">Today</span>
       <span class="label label--small">
@@ -79,7 +79,7 @@
     {% endif %}
   </div>
   {% if show_tomorrow %}
-    <div class="tomorrow flex flex--col flex--end" style="flex: 0 0 auto; margin-top: auto;">
+    <div class="tomorrow flex flex--col shrink-0">
       <div class="flex flex--row flex--between stretch-x border--h-5">
         <span class="label">Tomorrow</span>
         <span class="label label--small">
